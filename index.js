@@ -151,7 +151,7 @@ function showMovieModal(id) {
   const modalDate = document.querySelector('#movie-modal-date')
   const modalDescription = document.querySelector('#movie-modal-description')
 
-  //避免顯示上一部資訊
+  //利用輸入空值，避免顯示上一部資訊
   modalTitle.innerText = ''
   modalImage.firstElementChild.src = ''
   modalDate.innerText = ''
