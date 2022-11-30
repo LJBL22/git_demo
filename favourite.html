@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+  <title>Movie List_favourite movies</title>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="./index.html">Movie List</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <!-- 對應到 data-ts-target -->
+        <ul class="navbar-nav  me-auto">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="./index.html">Home
+              <span class="visually-hidden">(current)</span> <!-- 查看教案新增這行，暫時不知道做什麼用 -->
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./favourite.html">Favourite</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Container-->
+  <div class="container mt-5">
+    <div class="row row-cols-1 row-cols-md-4 g-4" id="data-panel">
+      <!-- Render Movie Cards -->
+    </div>
+  </div>
+
+  <!-- Movie Modal -->
+  <!-- 目前看來放在尾巴就可以 -->
+  <div class="modal fade" id="movie-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <!-- 教案多了一個role="dialog" -->
+    <div class="modal-dialog modal-lg">
+      <!-- 改變 modal 的尺寸 -lg -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fs-5" id="movie-modal-title">Movie title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+          </button> <!-- ！不太懂這裡有 button 是為什麼，或許未來？ -->
+        </div>
+        <div class="modal-body" id="movie-modal-body">
+          <!-- 這行教案會放在此處>row>再左海報右說明 -->
+          <div class="row">
+            <div class="col-sm-8" id="movie-modal-image">
+              <img
+                src="https://raw.githubusercontent.com/ALPHACamp/movie-list-api/master/public/posters/80PWnSTkygi3QWWmJ3hrAwqvLnO.jpg"
+                class="img-fluid" alt="Movie Poster">
+            </div>
+            <div class="col-sm-4">
+              <p><em id="movie-modal-date">Release date: 2022/11/8</em></p>
+              <p id="movie-modal-description">This is a movie.</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js"
+    integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk"
+    crossorigin="anonymous"></script>
+  <script src="./favourite.js"></script>
+</body>
+
+</html>
