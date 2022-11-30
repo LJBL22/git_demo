@@ -6,44 +6,37 @@ const MOVIES_PER_PAGE = 12
 
 const movies = []
 let filteredMovies = []
-let pageNumber = 1
+let currentPage = 1
 
 const dataPanel = document.querySelector('#data-panel')
 const searchForm = document.querySelector('#search-form')
 const searchInput = document.querySelector('#search-input')
-const controlRenderStyle = document.querySelector('#control-render-style')
+const controlRenderMode = document.querySelector('#control-render-mode')
 const paginator = document.querySelector('#paginator')
 
 //main code
-renderMovieList()
+axios.get(INDEX_URL)
+  .then((response) => {
+    //寫法一：for...of //利用展開運算子，展開 r.d.r ... 裡的元素，接著 push 近 movies 陣列
+    //初始為空陣列 利用長度來判斷較不容易出錯
+    movies.push(...response.data.results)
+    renderPaginator(movies.length) //先 renderPage 才做 renderCardList 
+    renderMovieList(getMoviesByPage(currentPage)) //初始值是第一頁
+  })
+  .catch(error => console.log(error))
 
 //監聽
 dataPanel.addEventListener('click', onPanelClick)
 searchForm.addEventListener('submit', onSearchFormSubmitted)
-controlRenderStyle.addEventListener('click', changeStyle)
-controlRenderStyle.addEventListener('click', goToPage)
-paginator.addEventListener('click', changeStyle)
+controlRenderMode.addEventListener('click', changeMode)
 paginator.addEventListener('click', goToPage)
 
 //函式 依照畫面從上往下、及關聯性羅列
-function renderMovieList() {
-  axios.get(INDEX_URL)
-    .then((response) => {
-      //寫法一：for...of //利用展開運算子，展開 r.d.r ... 裡的元素，接著 push 近 movies 陣列
-      if (movies.length === 0) { //初始為空陣列 利用長度來判斷較不容易出錯
-        movies.push(...response.data.results)
-        renderPaginator(movies.length) //先 renderPage 才做 renderCardList 
-        renderCardStyle(getMoviesByPage(1)) //初始值是第一頁
-      } else {
-        console.log('有東西就可以執行其他');
-      }
-    })
-    .catch(error => console.log(error))
-}
-function renderCardStyle(data) {
-  let HTMLContent = ''
-  data.forEach(item => {
-    HTMLContent += `
+function renderMovieList(data) {
+  if (dataPanel.dataset.mode === 'card-mode') {
+    let HTMLContent = ''
+    data.forEach(item => {
+      HTMLContent += `
       <div class="col">
         <div class="card">
           <img
@@ -60,15 +53,14 @@ function renderCardStyle(data) {
         </div>
       </div>
     `
-  })
-  dataPanel.innerHTML = HTMLContent
-}
-function renderTableStyle(data) {
-  let HTMLContent = `
+    })
+    dataPanel.innerHTML = HTMLContent
+  } else if (dataPanel.dataset.mode === 'table-mode') {
+    let HTMLContent = `
     <table class="table table-hover align-middle">
       <tbody>`
-  data.forEach(item => {
-    HTMLContent += `
+    data.forEach(item => {
+      HTMLContent += `
         <tr>
           <th scope="row">
           <img src="${POSTER_URL + item.image}" width="50" alt="Movie Poster">
@@ -78,22 +70,40 @@ function renderTableStyle(data) {
           <td><button type="button" class="btn btn-success btn-sm btn-add-favourite" data-id="${item.id}">♡</button></td>
         </tr>
     `
-  })
-  HTMLContent += `
+    })
+    HTMLContent += `
       </tbody>
     </table>`
-  dataPanel.innerHTML = HTMLContent
-}
-function changeStyle(event) {
-  console.log(event);
-  if (event.target.matches('.show-card-btn')) {
-    renderPaginator(movies.length)
-    renderCardStyle(getMoviesByPage(1))
-    // console.log('success');
-  } else if (event.target.matches('.show-table-btn')) {
-    renderPaginator(movies.length)
-    renderTableStyle(getMoviesByPage(1))
+    dataPanel.innerHTML = HTMLContent
   }
+}
+function changeMode(event) {
+  if (event.target.matches('.card-mode-btn')) {
+    dataPanel.dataset.mode = 'card-mode'
+    renderMovieList(getMoviesByPage(currentPage))
+  } else if (event.target.matches('.table-mode-btn')) {
+    dataPanel.dataset.mode = 'table-mode'
+    renderMovieList(getMoviesByPage(currentPage))
+  }
+}
+function onSearchFormSubmitted(event) {
+  //取消預設事件，避免頁面重新跳轉 //該預設事件是綁在 form 上面的 action
+  event.preventDefault()
+  //取得搜尋關鍵字 
+  const keyword = searchInput.value.trim().toLowerCase()
+  //條件篩選
+  //作法二  filter() 以及 includes() 會有大小寫之分，因此再加上 toLowerCase
+  filteredMovies = movies.filter(movie => {
+    return movie.title.toLowerCase().includes(keyword)
+  })
+  //錯誤處理：無符合條件則跳通知提醒
+  if (filteredMovies.length === 0) {
+    return alert('查無關鍵字，請重新輸入！')
+  }
+  //統一從第一頁開始
+  currentPage = 1
+  renderPaginator(filteredMovies.length)
+  renderMovieList(getMoviesByPage(currentPage))
 }
 function getMoviesByPage(page) {
   // page 1 = 0-11 //splice(0,12)
@@ -112,35 +122,6 @@ function getMoviesByPage(page) {
   const startIndex = (page - 1) * MOVIES_PER_PAGE
   return data.slice(startIndex, startIndex + MOVIES_PER_PAGE) //回傳此值讓其他函式繼續利用 //在函式外用其他變數接住這個回傳值做後續操作，
 }
-function goToPage(event) {
-  console.log(pageNumber)
-  if (event.target.tagName !== 'A' || event.target.tagName !== 'I') return // 錯誤處理 i.e 我們只要 tagName = A 或 I 的時候才執行此函式；否則跳出結束
-
-  pageNumber = Number(event.target.dataset.page)
-  console.log(pageNumber);
-  renderCardStyle(getMoviesByPage(pageNumber))
-}
-function onSearchFormSubmitted(event) {
-  //取消預設事件，避免頁面重新跳轉 //該預設事件是綁在 form 上面的 action
-  event.preventDefault()
-  //取得搜尋關鍵字 
-  const keyword = searchInput.value.trim().toLowerCase()
-  //條件篩選
-  //作法二  filter() 以及 includes() 會有大小寫之分，因此再加上 toLowerCase
-  filteredMovies = movies.filter(movie => {
-    return movie.title.toLowerCase().includes(keyword)
-  })
-  //若要大括號的話，在這個情境就一定要寫 Return 
-  //這邊只有一行的話可以省略花括號，以及 Return 
-
-  //錯誤處理：無符合條件則跳通知提醒
-  if (filteredMovies.length === 0) {
-    return alert('查無關鍵字，請重新輸入！')
-  }
-  renderPaginator(filteredMovies.length)
-  renderCardStyle(getMoviesByPage(1))
-}
-
 function renderPaginator(amount) {
   //80 = 12 * 6...8
   const totalPages = Math.ceil(amount / MOVIES_PER_PAGE)
@@ -150,7 +131,12 @@ function renderPaginator(amount) {
   }
   paginator.innerHTML = HTMLContent
 }
-
+function goToPage(event) {
+  if (event.target.tagName !== 'A') return // 錯誤處理 i.e 我們只要 tagName = A 的時候才執行此函式；否則跳出結束
+  const page = Number(event.target.dataset.page)
+  currentPage = page //MA
+  renderMovieList(getMoviesByPage(currentPage)) //直接操作兩個函式！！！ 將 pageNumber 傳入 gMB 然後取出該分頁特定的 movies 內容，然後再渲染！！！
+}
 function onPanelClick(event) {
   if (event.target.matches('.btn-show-movie')) {
     // console.log(event.event.target.dataset)
@@ -176,12 +162,7 @@ function showMovieModal(id) {
       // console.log(response)
       const data = response.data.results
       modalTitle.innerText = data.title
-      //src 寫法，自己想起來的^^
       modalImage.firstElementChild.src = `${POSTER_URL + data.image}`
-      //教案寫法
-      // modalImage.innerHTML = `
-      // <img src="${POSTER_URL + data.image}"
-      // class="img-fluid" alt="Movie Poster">`
       modalDate.innerText = `Release date: ${data.release_date}`
       modalDescription.innerText = data.description
     })
