@@ -6,6 +6,7 @@ const MOVIES_PER_PAGE = 12
 
 const movies = []
 let filteredMovies = []
+let pageNumber = 1
 
 const dataPanel = document.querySelector('#data-panel')
 const searchForm = document.querySelector('#search-form')
@@ -20,6 +21,8 @@ renderMovieList()
 dataPanel.addEventListener('click', onPanelClick)
 searchForm.addEventListener('submit', onSearchFormSubmitted)
 controlRenderStyle.addEventListener('click', changeStyle)
+controlRenderStyle.addEventListener('click', goToPage)
+paginator.addEventListener('click', changeStyle)
 paginator.addEventListener('click', goToPage)
 
 //函式 依照畫面從上往下、及關聯性羅列
@@ -92,6 +95,31 @@ function changeStyle(event) {
     renderTableStyle(getMoviesByPage(1))
   }
 }
+function getMoviesByPage(page) {
+  // page 1 = 0-11 //splice(0,12)
+  // page 2 = 12-23 //splice(12,24)
+  // ...> 因為 slice 結尾的 index 不會被包含
+
+  //注意，這裡的 movies 有兩個可能性，可用 三元運算子來做判斷
+
+  // 寫法一
+  // let data = movies
+  // if (filteredMovies.length) {
+  //   data = filteredMovies
+  // }
+  //寫法二 三元運算子 條件 ? true 回傳值: false 回傳值  
+  const data = filteredMovies.length ? filteredMovies : movies
+  const startIndex = (page - 1) * MOVIES_PER_PAGE
+  return data.slice(startIndex, startIndex + MOVIES_PER_PAGE) //回傳此值讓其他函式繼續利用 //在函式外用其他變數接住這個回傳值做後續操作，
+}
+function goToPage(event) {
+  console.log(pageNumber)
+  if (event.target.tagName !== 'A' || event.target.tagName !== 'I') return // 錯誤處理 i.e 我們只要 tagName = A 或 I 的時候才執行此函式；否則跳出結束
+
+  pageNumber = Number(event.target.dataset.page)
+  console.log(pageNumber);
+  renderCardStyle(getMoviesByPage(pageNumber))
+}
 function onSearchFormSubmitted(event) {
   //取消預設事件，避免頁面重新跳轉 //該預設事件是綁在 form 上面的 action
   event.preventDefault()
@@ -112,23 +140,7 @@ function onSearchFormSubmitted(event) {
   renderPaginator(filteredMovies.length)
   renderCardStyle(getMoviesByPage(1))
 }
-function getMoviesByPage(page) {
-  // page 1 = 0-11 //splice(0,12)
-  // page 2 = 12-23 //splice(12,24)
-  // ...> 因為 slice 結尾的 index 不會被包含
 
-  //注意，這裡的 movies 有兩個可能性，可用 三元運算子來做判斷
-
-  // 寫法一
-  // let data = movies
-  // if (filteredMovies.length) {
-  //   data = filteredMovies
-  // }
-  //寫法二 三元運算子 條件 ? true 回傳值: false 回傳值  
-  const data = filteredMovies.length ? filteredMovies : movies
-  const startIndex = (page - 1) * MOVIES_PER_PAGE
-  return data.slice(startIndex, startIndex + MOVIES_PER_PAGE) //回傳此值讓其他函式繼續利用 //在函式外用其他變數接住這個回傳值做後續操作，
-}
 function renderPaginator(amount) {
   //80 = 12 * 6...8
   const totalPages = Math.ceil(amount / MOVIES_PER_PAGE)
@@ -138,11 +150,7 @@ function renderPaginator(amount) {
   }
   paginator.innerHTML = HTMLContent
 }
-function goToPage(event) {
-  if (event.target.tagName !== 'A') return // 錯誤處理 i.e 我們只要 tagName = A 的時候才執行此函式；否則跳出結束
-  const pageNumber = Number(event.target.dataset.page)
-  renderCardStyle(getMoviesByPage(pageNumber)) //直接操作兩個函式！！！ 將 pageNumber 傳入 gMB 然後取出該分頁特定的 movies 內容，然後再渲染！！！
-}
+
 function onPanelClick(event) {
   if (event.target.matches('.btn-show-movie')) {
     // console.log(event.event.target.dataset)
